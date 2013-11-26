@@ -135,9 +135,6 @@ public class WEATGenerator extends Configured implements Tool {
     // Create a job configuration
     JobConf job = new JobConf( getConf( ) );
 
-    // Job name uses output dir to help identify it to the operator.
-    job.setJobName( "WEAT Generator " + args[0] );
-
     // The inputs are a list of filenames, use the
     // FilenameInputFormat to pass them to the mappers.
     job.setInputFormat( FilenameInputFormat.class );
@@ -172,6 +169,8 @@ public class WEATGenerator extends Configured implements Tool {
     job.set("watOutputDir", watOutputDir);
     job.set("wetOutputDir", wetOutputDir);
 
+    // Job name uses output dir to help identify it to the operator.
+    job.setJobName( "WEAT Generator " + watOutputDir + " " + wetOutputDir + " " );
 
     //FileOutputFormat.setOutputPath(job, new Path(outputDir));
 
