@@ -20,6 +20,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.archive.extract.ExtractingResourceFactoryMapper;
@@ -146,7 +147,7 @@ public class WEATGenerator extends Configured implements Tool {
     // keep job running despite some failures in generating WATs
     job.setBoolean("strictMode",false);
 
-    job.setOutputFormat(TextOutputFormat.class);
+    job.setOutputFormat(NullOutputFormat.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
     job.setMapperClass(WEATGeneratorMapper.class);
@@ -166,6 +167,8 @@ public class WEATGenerator extends Configured implements Tool {
 
     job.set("watOutputDir", watOutputDir);
     job.set("wetOutputDir", wetOutputDir);
+
+
     //FileOutputFormat.setOutputPath(job, new Path(outputDir));
 
     boolean atLeastOneInput = false;

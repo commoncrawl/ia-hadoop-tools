@@ -111,6 +111,10 @@ public class JobDriver {
 			pgd.addClass(WATGenerator.TOOL_NAME,
 					WATGenerator.class,
 					WATGenerator.TOOL_DESCRIPTION);
+
+      pgd.addClass(WEATGenerator.TOOL_NAME,
+          WEATGenerator.class,
+          WEATGenerator.TOOL_DESCRIPTION);
 			
 			pgd.addClass(CDXGenerator.TOOL_NAME,
 					CDXGenerator.class,
