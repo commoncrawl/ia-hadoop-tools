@@ -35,6 +35,8 @@ import org.archive.resource.Resource;
 import org.archive.resource.ResourceProducer;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * WEATGenerator - Generate WAT and WET files from (W)ARC files stored in HDFS
@@ -67,9 +69,10 @@ public class WEATGenerator extends Configured implements Tool {
       LOG.info( "Start: "  + path );
 
       try {
-        FSDataInputStream fis = null;
+        Logger.getLogger("org.archive.format.gzip.GZIPMemberSeries").setLevel(Level.WARNING);
+
         Path inputPath = new Path(path);
-        fis = FileSystem.get(new java.net.URI(path), this.jobConf).open( inputPath );
+        //FSDataInputStream fis = FileSystem.get(new java.net.URI(path), this.jobConf).open( inputPath );
 
         String inputBasename = inputPath.getName();
         String watOutputBasename = "";
@@ -103,8 +106,9 @@ public class WEATGenerator extends Configured implements Tool {
             break;
           }
           count++;
-          watOut.output(r);
+          LOG.info("Outputting new record " + count);
           wetOut.output(r);
+          watOut.output(r);
         }
         watfsdOut.close();
         wetfsdOut.close();
