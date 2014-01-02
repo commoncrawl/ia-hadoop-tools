@@ -4,14 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -19,7 +17,6 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
-import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -72,7 +69,7 @@ public class WEATGenerator extends Configured implements Tool {
         Logger.getLogger("org.archive.format.gzip.GZIPMemberSeries").setLevel(Level.WARNING);
 
         Path inputPath = new Path(path);
-        //FSDataInputStream fis = FileSystem.get(new java.net.URI(path), this.jobConf).open( inputPath );
+        Path basePath = inputPath.getParent().getParent();
 
         String inputBasename = inputPath.getName();
         String watOutputBasename = "";
@@ -86,15 +83,16 @@ public class WEATGenerator extends Configured implements Tool {
           wetOutputBasename = inputBasename + ".wet.gz";
         }
 
-        String watOutputFileString = this.jobConf.get("watOutputDir") + "/" + watOutputBasename;
+        String watOutputFileString = basePath.toString() + "/wat/" + watOutputBasename;
+        String wetOutputFileString = basePath.toString() + "/wet/" + wetOutputBasename;
+
+        LOG.info("About to write out to " + watOutputFileString + " and " + wetOutputFileString);
 
         FSDataOutputStream watfsdOut = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf).create(new Path(watOutputFileString), false);
         ExtractorOutput watOut = new WATExtractorOutput(watfsdOut);
         ResourceProducer producer = ProducerUtils.getProducer(path.toString());
         ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
         ExtractingResourceProducer exProducer = new ExtractingResourceProducer(producer, mapper);
-
-        String wetOutputFileString = this.jobConf.get("wetOutputDir") + "/" + wetOutputBasename;
 
         FSDataOutputStream wetfsdOut = FileSystem.get(new java.net.URI(wetOutputFileString), this.jobConf).create(new Path(wetOutputFileString), false);
         ExtractorOutput wetOut = new WETExtractorOutput(wetfsdOut, wetOutputBasename);
@@ -120,14 +118,16 @@ public class WEATGenerator extends Configured implements Tool {
       } finally {
         LOG.info( "Finish: "  + path );
       }
+
     }
+
   }
 
   /**
    * Run the job.
    */
   public int run( String[] args ) throws Exception {
-    if ( args.length < 3 ) {
+    if ( args.length < 2 ) {
       usage();
       return 1;
     }
@@ -160,17 +160,24 @@ public class WEATGenerator extends Configured implements Tool {
       arg++;
     }
 
+
+    String randomId = args[arg];
+    arg++;
+
+    /*
     String watOutputDir = args[arg];
     arg++;
 
     String wetOutputDir = args[arg];
     arg++;
 
+
     job.set("watOutputDir", watOutputDir);
     job.set("wetOutputDir", wetOutputDir);
+    */
 
     // Job name uses output dir to help identify it to the operator.
-    job.setJobName( "WEAT Generator " + watOutputDir + " " + wetOutputDir + " " );
+    job.setJobName( "WEAT Generator " + randomId);
 
     //FileOutputFormat.setOutputPath(job, new Path(outputDir));
 
