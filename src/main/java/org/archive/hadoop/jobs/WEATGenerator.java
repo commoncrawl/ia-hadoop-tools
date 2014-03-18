@@ -104,7 +104,8 @@ public class WEATGenerator extends Configured implements Tool {
             break;
           }
           count++;
-          LOG.info("Outputting new record " + count);
+          reporter.incrCounter("exporter", "processed", 1);
+          //LOG.info("Outputting new record " + count);
           wetOut.output(r);
           watOut.output(r);
         }
@@ -112,6 +113,7 @@ public class WEATGenerator extends Configured implements Tool {
         wetfsdOut.close();
       } catch ( Exception e ) {
         LOG.error( "Error processing file: " + path, e );
+        reporter.incrCounter("exporter", "errors", 1);
         if ( this.jobConf.getBoolean( "strictMode", true ) ) {
           throw new IOException( e );
         }
