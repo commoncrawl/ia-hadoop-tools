@@ -52,7 +52,6 @@ public class WEATGenerator extends Configured implements Tool {
      * <p>Configures the job.</p>
      * * @param job The job configuration.
      */
-
     public void configure( JobConf job ) {
       this.jobConf = job;
     }
@@ -105,7 +104,9 @@ public class WEATGenerator extends Configured implements Tool {
           }
           count++;
           reporter.incrCounter("exporter", "processed", 1);
-          //LOG.info("Outputting new record " + count);
+          if (count % 1000 == 0) {
+        	  LOG.info("Outputting new record " + count);
+          }
           wetOut.output(r);
           watOut.output(r);
         }
@@ -162,22 +163,9 @@ public class WEATGenerator extends Configured implements Tool {
       arg++;
     }
 
-
     String randomId = args[arg];
     arg++;
-
-    /*
-    String watOutputDir = args[arg];
-    arg++;
-
-    String wetOutputDir = args[arg];
-    arg++;
-
-
-    job.set("watOutputDir", watOutputDir);
-    job.set("wetOutputDir", wetOutputDir);
-    */
-
+    
     // Job name uses output dir to help identify it to the operator.
     job.setJobName( "WEAT Generator " + randomId);
 
@@ -211,7 +199,7 @@ public class WEATGenerator extends Configured implements Tool {
    * Emit usage information for command-line driver.
    */
   public void usage( ) {
-    String usage =  "Usage: WEATGenerator <watOutputDir> <wetOutputDir> <(w)arcfile>...\n" ;
+    String usage = "Usage: WEATGenerator <batch identifier> <(w)arcfile>...\n" ;
     System.out.println( usage );
   }
 
