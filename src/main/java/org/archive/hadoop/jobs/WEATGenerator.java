@@ -165,15 +165,18 @@ public class WEATGenerator extends Configured implements Tool {
     job.setJarByClass(WEATGenerator.class);
 
     int arg = 0;
-    if(args[arg].equals("-strictMode")) {
-      job.setBoolean("strictMode",true);
-      arg++;
+    while (args[arg].startsWith("-")) {
+    	if(args[arg].equals("-strictMode")) {
+    		job.setBoolean("strictMode",true);
+    		arg++;    		
+    	} else if(args[arg].equals("-skipExisting")) {
+    		job.setBoolean("skipExisting", true);
+    		arg++;
+    	} else {
+    		break;
+    	}
     }
-    
-    if(args[arg].equals("-skipExisting")) {
-        job.setBoolean("skipExisting", true);
-        arg++;
-    }
+
 
     String randomId = args[arg];
     arg++;
