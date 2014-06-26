@@ -90,6 +90,7 @@ public class WEATGenerator extends Configured implements Tool {
         	FileSystem fs = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf);
         	if (fs.exists(new Path(watOutputFileString)) && fs.exists(new Path(wetOutputFileString))) {
         		LOG.info("Skipping " + inputBasename + " wet & wat already exist and skipExisting=true");
+        		return;
         	}
         }
 
