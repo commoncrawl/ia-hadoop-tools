@@ -98,24 +98,17 @@ public class WEATGenerator extends Configured implements Tool {
 
         int count = 0;
         while(count < Integer.MAX_VALUE) {
-        	try {
-        		Resource r = exProducer.getNext();
-        		if(r == null) {
-        			break;
-        		}
-        		count++;
-        		reporter.incrCounter("exporter", "processed", 1);
-        		if (count % 1000 == 0) {
-        			LOG.info("Outputting new record " + count);
-        		}
-        		wetOut.output(r);
-        		watOut.output(r);
-        	} catch (org.archive.resource.ResourceParseException e){
-        		LOG.error("Resource parse error: " + e);
-                if ( this.jobConf.getBoolean( "strictMode", true ) ) {
-                    throw e;
-                }    		
-        	}
+          Resource r = exProducer.getNext();
+          if(r == null) {
+            break;
+          }
+          count++;
+          reporter.incrCounter("exporter", "processed", 1);
+          if (count % 1000 == 0) {
+        	  LOG.info("Outputting new record " + count);
+          }
+          wetOut.output(r);
+          watOut.output(r);
         }
         watfsdOut.close();
         wetfsdOut.close();
