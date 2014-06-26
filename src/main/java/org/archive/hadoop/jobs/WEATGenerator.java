@@ -85,7 +85,13 @@ public class WEATGenerator extends Configured implements Tool {
         String watOutputFileString = basePath.toString() + "/wat/" + watOutputBasename;
         String wetOutputFileString = basePath.toString() + "/wet/" + wetOutputBasename;
 
-        LOG.info("About to write out to " + watOutputFileString + " and " + wetOutputFileString);
+        LOG.info("About to write out to " + watOutputFileString + " and " + wetOutputFileString);   
+        if (this.jobConf.getBoolean("skipExisting", false)) {
+        	FileSystem fs = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf);
+        	if (fs.exists(new Path(watOutputFileString)) && fs.exists(new Path(wetOutputFileString))) {
+        		LOG.info("Skipping " + inputBasename + " wet & wat already exist and skipExisting=true");
+        	}
+        }
 
         FSDataOutputStream watfsdOut = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf).create(new Path(watOutputFileString), false);
         ExtractorOutput watOut = new WATExtractorOutput(watfsdOut);
@@ -150,6 +156,7 @@ public class WEATGenerator extends Configured implements Tool {
 
     // keep job running despite some failures in generating WATs
     job.setBoolean("strictMode",false);
+    job.setBoolean("skipExisting", false);
 
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputKeyClass(Text.class);
@@ -161,6 +168,11 @@ public class WEATGenerator extends Configured implements Tool {
     if(args[arg].equals("-strictMode")) {
       job.setBoolean("strictMode",true);
       arg++;
+    }
+    
+    if(args[arg].equals("-skipExisting")) {
+        job.setBoolean("skipExisting", true);
+        arg++;
     }
 
     String randomId = args[arg];
