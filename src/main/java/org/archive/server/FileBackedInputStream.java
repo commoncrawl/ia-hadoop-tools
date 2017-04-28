@@ -22,8 +22,9 @@ public class FileBackedInputStream extends FilterInputStream {
 	public boolean markSupported() {
 		return false;
 	}
+
 	public InputStream getInputStream() throws IOException {
-		return backer.getSupplier().getInput();
+		return backer.asByteSource().openStream();
 	}
 
 	public void resetBacker() throws IOException {

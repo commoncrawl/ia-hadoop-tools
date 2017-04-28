@@ -30,7 +30,6 @@ import org.archive.util.IAUtils;
 import org.archive.util.DateUtils;
 import org.archive.util.FileNameSpec;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.LimitInputStream;
 
 public class GZRangeClient {
 
@@ -284,7 +283,7 @@ http-header-from: archive-crawler-agent@lists.sourceforge.net
 		if(currentWarcSize == 0) {
 			nextWarc();
 		}
-		LimitInputStream lis = new LimitInputStream(is, length);
+		InputStream lis = ByteStreams.limit(is, length);
 		ByteStreams.copy(lis, currentWarcOS);
 		currentWarcSize += length;
 		if(currentWarcSize > maxWarcSize) {
@@ -295,7 +294,7 @@ http-header-from: archive-crawler-agent@lists.sourceforge.net
 		if(currentArcSize == 0) {
 			nextArc();
 		}
-		LimitInputStream lis = new LimitInputStream(is, length);
+		InputStream lis = ByteStreams.limit(is, length);
 		ByteStreams.copy(lis, currentArcOS);
 		currentArcSize += length;
 		if(currentArcSize > maxArcSize) {
