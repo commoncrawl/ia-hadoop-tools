@@ -32,6 +32,12 @@
       <groupId>org.archive.access-control</groupId>
       <artifactId>access-control</artifactId>
       <version>0.1.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.netpreserve.commons</groupId>
+          <artifactId>webarchive-commons</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.pig</groupId>

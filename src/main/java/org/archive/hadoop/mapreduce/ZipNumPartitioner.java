@@ -15,9 +15,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.archive.util.binsearch.SortedTextFile;
 import org.archive.util.iterator.CloseableIterator;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONTokener;
+import com.github.openjson.JSONArray;
+import com.github.openjson.JSONException;
+import com.github.openjson.JSONTokener;
 
 public class ZipNumPartitioner<K, V> extends Partitioner<K, V> implements Configurable {
 	
