@@ -66,6 +66,7 @@ public class WEATGenerator extends Configured implements Tool {
 
       try {
         Logger.getLogger("org.archive.format.gzip.GZIPMemberSeries").setLevel(Level.WARNING);
+        Logger.getLogger("org.archive.extract.ExtractingResourceProducer").setLevel(Level.WARNING);
 
         Path inputPath = new Path(path);
         Path basePath = inputPath.getParent().getParent();
