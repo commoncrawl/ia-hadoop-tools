@@ -27,9 +27,16 @@ import org.archive.extract.ProducerUtils;
 import org.archive.extract.ResourceFactoryMapper;
 import org.archive.extract.WATExtractorOutput;
 import org.archive.extract.WETExtractorOutput;
+import org.archive.format.json.JSONUtils;
 import org.archive.hadoop.util.FilenameInputFormat;
 import org.archive.resource.Resource;
 import org.archive.resource.ResourceProducer;
+import org.archive.resource.html.HTMLResource;
+import org.archive.resource.warc.record.WARCMetaDataResource;
+
+import com.github.openjson.JSONArray;
+import com.github.openjson.JSONException;
+import com.github.openjson.JSONObject;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -88,11 +95,11 @@ public class WEATGenerator extends Configured implements Tool {
 
         LOG.info("About to write out to " + watOutputFileString + " and " + wetOutputFileString);   
         if (this.jobConf.getBoolean("skipExisting", false)) {
-        	FileSystem fs = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf);
-        	if (fs.exists(new Path(watOutputFileString)) && fs.exists(new Path(wetOutputFileString))) {
-        		LOG.info("Skipping " + inputBasename + " wet & wat already exist and skipExisting=true");
-        		return;
-        	}
+          FileSystem fs = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf);
+          if (fs.exists(new Path(watOutputFileString)) && fs.exists(new Path(wetOutputFileString))) {
+            LOG.info("Skipping " + inputBasename + " wet & wat already exist and skipExisting=true");
+            return;
+          }
         }
 
         FSDataOutputStream watfsdOut = FileSystem.get(new java.net.URI(watOutputFileString), this.jobConf).create(new Path(watOutputFileString), false);
@@ -105,6 +112,7 @@ public class WEATGenerator extends Configured implements Tool {
         ExtractorOutput wetOut = new WETExtractorOutput(wetfsdOut, wetOutputBasename);
 
         int count = 0;
+        Resource lr = null;
         while(count < Integer.MAX_VALUE) {
           Resource r = exProducer.getNext();
           if(r == null) {
@@ -113,10 +121,23 @@ public class WEATGenerator extends Configured implements Tool {
           count++;
           reporter.incrCounter("exporter", "processed", 1);
           if (count % 1000 == 0) {
-        	  LOG.info("Outputting new record " + count);
+            LOG.info("Outputting new record " + count);
           }
-          wetOut.output(r);
           watOut.output(r);
+          if (lr != null && isMetaConcurrentTo(r, lr)) {
+            JSONArray payloadMetadata = JSONUtils.extractArray(r.getMetaData().getTopMetaData(),
+                 "Envelope.Payload-Metadata.WARC-Metadata-Metadata.Metadata-Records");
+            JSONObject lheaders = JSONUtils.extractObject(lr.getMetaData().getTopMetaData(),
+              "Envelope.WARC-Header-Metadata");
+            addIdentifiedContentLanguage(lheaders, payloadMetadata);
+          }
+          if (lr != null) {
+            wetOut.output(lr);
+          }
+          lr = r;
+        }
+        if (lr != null) {
+          wetOut.output(lr);
         }
         watfsdOut.close();
         wetfsdOut.close();
@@ -129,10 +150,69 @@ public class WEATGenerator extends Configured implements Tool {
       } finally {
         LOG.info( "Finish: "  + path );
       }
-
     }
 
+  private void addIdentifiedContentLanguage(JSONObject headers, JSONArray payloadMetadata) {
+    for (int i = 0; i < payloadMetadata.length(); i++) {
+      if (payloadMetadata.getJSONObject(i).get("Name").equals("languages-cld2")) {
+        String val = payloadMetadata.getJSONObject(i).getString("Value");
+        try {
+          JSONObject jsonVal = new JSONObject(val);
+          if (!jsonVal.has("languages"))
+            continue;
+          JSONArray langs = jsonVal.getJSONArray("languages");
+          String identifiedLanguages;
+          if (langs.length() == 1) {
+            identifiedLanguages = langs.getJSONObject(0).getString("code-iso-639-3");
+          } else {
+            StringBuilder sb = new StringBuilder();
+            String[] dedup = { "", "" };
+            for (int j = 0; j < langs.length(); j++) {
+              String lang =  langs.getJSONObject(j).getString("code-iso-639-3");
+              if (lang == null || "null".equals(lang)
+                  || (j > 0 && dedup[0].equals(lang))
+                  || (j > 1 && dedup[1].equals(lang))) {
+                continue;
+              }
+              if (sb.length() > 0) {
+                sb.append(',');
+              }
+              sb.append(lang);
+              if (j < 2) {
+                dedup[j] = lang;
+              }
+            }
+            identifiedLanguages = sb.toString();
+          }
+          if (!identifiedLanguages.isEmpty()) {
+            headers.put("WARC-Identified-Content-Language", identifiedLanguages);
+          }
+        } catch (JSONException e) {
+          LOG.error("Failed to parse CLD2 result: ", e);
+        }
+      }
+    }
   }
+
+  private static boolean isMetaConcurrentTo(Resource meta, Resource response) {
+    if (meta instanceof WARCMetaDataResource && response instanceof HTMLResource) {
+      JSONObject mheaders = JSONUtils.extractObject(meta.getMetaData().getTopMetaData(),
+          "Envelope.WARC-Header-Metadata");
+      String mu = mheaders.getString("WARC-Target-URI");
+      JSONObject headers = JSONUtils.extractObject(response.getMetaData().getTopMetaData(),
+          "Envelope.WARC-Header-Metadata");
+      String u = headers.getString("WARC-Target-URI");
+      if (u.equals(mu)) {
+        String muid = mheaders.getString("WARC-Concurrent-To");
+        String uid = headers.getString("WARC-Record-ID");
+        if (uid.equals(muid)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+}
 
   /**
    * Run the job.
@@ -168,15 +248,15 @@ public class WEATGenerator extends Configured implements Tool {
 
     int arg = 0;
     while (args[arg].startsWith("-")) {
-    	if(args[arg].equals("-strictMode")) {
-    		job.setBoolean("strictMode",true);
-    		arg++;    		
-    	} else if(args[arg].equals("-skipExisting")) {
-    		job.setBoolean("skipExisting", true);
-    		arg++;
-    	} else {
-    		break;
-    	}
+      if(args[arg].equals("-strictMode")) {
+        job.setBoolean("strictMode",true);
+        arg++;
+      } else if(args[arg].equals("-skipExisting")) {
+        job.setBoolean("skipExisting", true);
+        arg++;
+      } else {
+        break;
+      }
     }
 
 
