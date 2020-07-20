@@ -271,7 +271,12 @@ public class WEATGenerator extends Configured implements Tool {
     boolean atLeastOneInput = false;
     for (int i = arg;i < args.length; i++) {
       FileSystem inputfs = FileSystem.get( new java.net.URI( args[i] ), getConf() );
-      for ( FileStatus status : inputfs.globStatus( new Path( args[i] ) ) ) {
+      FileStatus[] inputPaths = inputfs.globStatus( new Path( args[i] ) );
+      if (inputPaths == null) {
+        LOG.warn("No input found for: " + args[i]);
+        continue;
+      }
+      for ( FileStatus status : inputPaths ) {
         Path inputPath  = status.getPath();
         atLeastOneInput = true;
         LOG.info( "Add input path: " + inputPath );
