@@ -39,6 +39,8 @@ import com.github.openjson.JSONException;
 import com.github.openjson.JSONObject;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,14 +61,24 @@ public class WEATGenerator extends Configured implements Tool {
      * <p>Configures the job.</p>
      * * @param job The job configuration.
      */
+    @Override
     public void configure( JobConf job ) {
       this.jobConf = job;
+    }
+
+    public static String stringifyException(Throwable e) {
+      StringWriter stm = new StringWriter();
+      PrintWriter wrt = new PrintWriter(stm);
+      e.printStackTrace(wrt);
+      wrt.close();
+      return stm.toString();
     }
 
     /**
      * Generate WAT file for the (w)arc file named in the
      * <code>key</code>
      */
+    @Override
     public void map( Text key, Text value, OutputCollector output, Reporter reporter )throws IOException {
       String path = key.toString();
       LOG.info( "Start: "  + path );
@@ -114,7 +126,14 @@ public class WEATGenerator extends Configured implements Tool {
         int count = 0;
         Resource lr = null;
         while(count < Integer.MAX_VALUE) {
-          Resource r = exProducer.getNext();
+          Resource r = null;
+          try {
+            r = exProducer.getNext();
+          } catch (Exception e) {
+            LOG.error("Caught unhandled exception at: " + exProducer.getContext());
+            LOG.error(stringifyException(e));
+            continue;
+          }
           if(r == null) {
             break;
           }
@@ -217,6 +236,7 @@ public class WEATGenerator extends Configured implements Tool {
   /**
    * Run the job.
    */
+  @Override
   public int run( String[] args ) throws Exception {
     if ( args.length < 2 ) {
       usage();
