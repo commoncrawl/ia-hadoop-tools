@@ -54,6 +54,9 @@ public class WEATGenerator extends Configured implements Tool {
 
   public static final Log LOG = LogFactory.getLog(WEATGenerator.class);
 
+  // TODO: modify this class to also output cdx files. Look at hadoop plugins for fetch and/or other classes in this project for hints.
+  // TODO: new property for cdx paths or something is likely needed, same as fetch...
+  
   public static class WEATGeneratorMapper extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
     private JobConf jobConf;
 
