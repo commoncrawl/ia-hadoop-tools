@@ -54,9 +54,6 @@ public class WEATGenerator extends Configured implements Tool {
   public final static String TOOL_DESCRIPTION = "Generate WAT and WET files from (W)ARC files stored in HDFS";
 
   public static final Log LOG = LogFactory.getLog(WEATGenerator.class);
-
-  // TODO: modify this class to also output cdx files. Look at hadoop plugins for fetch and/or other classes in this project for hints.
-  // TODO: new property for cdx paths or something is likely needed, same as fetch...
   
   public static class WEATGeneratorMapper extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
     private JobConf jobConf;
@@ -93,6 +90,7 @@ public class WEATGenerator extends Configured implements Tool {
 
         Path inputPath = new Path(path);
         Path basePath = inputPath.getParent().getParent();
+        Path cdxBasePath = new Path(jobConf.get("cdxBasePath", basePath.toString()));
 
         String inputBasename = inputPath.getName();
         String watOutputBasename = "";
@@ -103,19 +101,19 @@ public class WEATGenerator extends Configured implements Tool {
         if(path.endsWith(".gz")) {
           watOutputBasename = inputBasename.substring(0,inputBasename.length()-3) + ".wat.gz";
           wetOutputBasename = inputBasename.substring(0,inputBasename.length()-3) + ".wet.gz";
-          cdxWatOutputBasename = inputBasename.substring(0,inputBasename.length()-3) + ".cdxwat.gz";
-          cdxWetOutputBasename = inputBasename.substring(0,inputBasename.length()-3) + ".cdxwet.gz";
+          cdxWatOutputBasename = inputBasename.replace(".warc.gz", ".wat.cdx.gz");
+          cdxWetOutputBasename = inputBasename.replace(".warc.gz", ".wet.cdx.gz");
         } else {
           watOutputBasename = inputBasename + ".wat.gz";
           wetOutputBasename = inputBasename + ".wet.gz";
-          cdxWatOutputBasename = inputBasename + ".cdxwat.gz";
-          cdxWetOutputBasename = inputBasename + ".cdxwet.gz";
+          cdxWatOutputBasename = inputBasename.replace(".warc", ".wat.cdx.gz");
+          cdxWetOutputBasename = inputBasename.replace(".warc", ".wet.cdx.gz");
         }
 
         String watOutputFileString = basePath.toString() + "/wat/" + watOutputBasename;
         String wetOutputFileString = basePath.toString() + "/wet/" + wetOutputBasename;
-        String cdxWetOutputFileString = basePath.toString() + "/cdxwet/" + cdxWetOutputBasename;
-        String cdxWatOutputFileString = basePath.toString() + "/cdxwat/" + cdxWatOutputBasename;
+        String cdxWetOutputFileString = cdxBasePath.toString() + "/" + cdxWetOutputBasename;
+        String cdxWatOutputFileString = cdxBasePath.toString() + "/" + cdxWatOutputBasename;
 
         LOG.info("About to write out to " + watOutputFileString + " and " + wetOutputFileString);   
         if (this.jobConf.getBoolean("skipExisting", false)) {
@@ -312,6 +310,10 @@ public class WEATGenerator extends Configured implements Tool {
         arg++;
       } else if(args[arg].equals("-outputCDX")) {
         job.setBoolean("outputCDX", true);
+        arg++;
+      } else if(args[arg].equals("-cdxBasePath")) {
+        job.set("cdxBasePath", args[arg+1]);
+        arg++;
         arg++;
       } else {
         break;
