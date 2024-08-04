@@ -139,16 +139,12 @@ public class WEATGenerator extends Configured implements Tool {
         ExtractorOutput cdxWetOut = null;
         FSDataOutputStream cdxWatfsOut = null;
         ExtractorOutput cdxWatOut = null;
-        if ( this.jobConf.getBoolean("outputCDX") ) {
+        if ( this.jobConf.getBoolean("outputCDX", false) ) {
           cdxWetfsOut = FileSystem.get(new java.net.URI(cdxWetOutputFileString), this.jobConf).create(new Path(cdxWetOutputFileString), false);
           cdxWetOut = new RealCDXExtractorOutput(new PrintWriter(cdxWetfsOut));
           cdxWatfsOut = FileSystem.get(new java.net.URI(cdxWatOutputFileString), this.jobConf).create(new Path(cdxWatOutputFileString), false);
           cdxWatOut = new RealCDXExtractorOutput(new PrintWriter(cdxWatfsOut));
         }
-        FSDataOutputStream cdxWetfsOut = FileSystem.get(new java.net.URI(cdxWetOutputFileString), this.jobConf).create(new Path(cdxWetOutputFileString), false);
-        ExtractorOutput cdxWetOut = new RealCDXExtractorOutput(new PrintWriter(cdxWetfsOut));
-        FSDataOutputStream cdxWatfsOut = FileSystem.get(new java.net.URI(cdxWatOutputFileString), this.jobConf).create(new Path(cdxWatOutputFileString), false);
-        ExtractorOutput cdxWatOut = new RealCDXExtractorOutput(new PrintWriter(cdxWatfsOut));
 
         int count = 0;
         Resource lr = null;
@@ -193,11 +189,11 @@ public class WEATGenerator extends Configured implements Tool {
         }
         watfsdOut.close();
         wetfsdOut.close();
-        if ( cdxWatfsdOut != null ) {
-          cdxWatfsdOut.close();
+        if ( cdxWatfsOut != null ) {
+          cdxWatfsOut.close();
         }
-        if ( cdxWetfsdOut != null ) {
-          cdxWetfsdOut.close();
+        if ( cdxWetfsOut != null ) {
+          cdxWetfsOut.close();
         }
       } catch ( Exception e ) {
         LOG.error( "Error processing file: " + path, e );
