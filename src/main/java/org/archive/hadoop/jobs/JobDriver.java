@@ -13,8 +13,6 @@ import org.archive.hadoop.util.HDFSMove;
 import org.archive.hadoop.util.HDFSSync;
 import org.archive.hadoop.util.HDFSeeko;
 import org.archive.io.ZipNumWriterTool;
-import org.archive.server.GZRangeClientTool;
-import org.archive.server.GZRangeServer;
 import org.archive.util.binsearch.FileSearchTool;
 
 public class JobDriver {
@@ -27,11 +25,11 @@ public class JobDriver {
 		ProgramDriver pgd = new ProgramDriver();
 		try {
 
-			pgd.addClass(CDXConverterTool.TOOL_NAME, 
+			pgd.addClass(CDXConverterTool.TOOL_NAME,
 					CDXConverterTool.class,
 					CDXConverterTool.TOOL_DESCRIPTION);
 
-			pgd.addClass(BuildCluster.TOOL_NAME, 
+			pgd.addClass(BuildCluster.TOOL_NAME,
 					BuildCluster.class,
 					BuildCluster.TOOL_DESCRIPTION);
 
@@ -39,19 +37,15 @@ public class JobDriver {
 					MergeClusters.class,
 					MergeClusters.TOOL_DESCRIPTION);
 
-			pgd.addClass(HTTPImportJob.TOOL_NAME, 
+			pgd.addClass(HTTPImportJob.TOOL_NAME,
 					HTTPImportJob.class,
 					HTTPImportJob.TOOL_DESCRIPTION);
 
-//			pgd.addClass("cdx-transform",
-//					CDXTransformer.class,
-//					"Test tool which trasnforms a wayback CDX into an experimental SURT split format");
-
-			pgd.addClass(HDFSeeko.TOOL_NAME, 
+			pgd.addClass(HDFSeeko.TOOL_NAME,
 					HDFSeeko.class,
 					HDFSeeko.TOOL_DESCRIPTION);
 
-			pgd.addClass(ZipNumWriterTool.TOOL_NAME, 
+			pgd.addClass(ZipNumWriterTool.TOOL_NAME,
 					ZipNumWriterTool.class,
 					ZipNumWriterTool.TOOL_DESCRIPTION);
 
@@ -65,7 +59,7 @@ public class JobDriver {
 			pgd.addClass(HDFSSync.TOOL_NAME, HDFSSync.class,
 					HDFSSync.TOOL_DESCRIPTION);
 
-			pgd.addClass(SummaryGenerator.TOOL_NAME, 
+			pgd.addClass(SummaryGenerator.TOOL_NAME,
 					SummaryGenerator.class,
 					SummaryGenerator.TOOL_DESCRIPTION);
 
@@ -92,42 +86,26 @@ public class JobDriver {
 					MergeClusterRangesJob.class,
 					MergeClusterRangesJob.TOOL_DESCRIPTION);
 
-			pgd.addClass(GZRangeServer.TOOL_NAME,
-					GZRangeServer.class,
-					GZRangeServer.TOOL_DESCRIPTION);
-
-			pgd.addClass(GZRangeClientTool.TOOL_NAME,
-					GZRangeClientTool.class,
-					GZRangeClientTool.TOOL_DESCRIPTION);
-
-			pgd.addClass(GZRangeClientTool.TOOL_NAME,
-					GZRangeClientTool.class,
-					GZRangeClientTool.TOOL_DESCRIPTION);
-			
 			pgd.addClass(WATExtractorJob.TOOL_NAME,
 					WATExtractorJob.class,
 					WATExtractorJob.TOOL_DESCRIPTION);
-					
+
 			pgd.addClass(WATGenerator.TOOL_NAME,
 					WATGenerator.class,
 					WATGenerator.TOOL_DESCRIPTION);
 
-      pgd.addClass(WEATGenerator.TOOL_NAME,
-          WEATGenerator.class,
-          WEATGenerator.TOOL_DESCRIPTION);
-			
+			pgd.addClass(WEATGenerator.TOOL_NAME,
+					WEATGenerator.class,
+					WEATGenerator.TOOL_DESCRIPTION);
+
 			pgd.addClass(CDXGenerator.TOOL_NAME,
 					CDXGenerator.class,
 					CDXGenerator.TOOL_DESCRIPTION);
-			
+
 			pgd.addClass(WARCMetadataRecordGenerator.TOOL_NAME,
 					WARCMetadataRecordGenerator.class,
 					WARCMetadataRecordGenerator.TOOL_DESCRIPTION);
-			
-			pgd.addClass(MergeCluster.TOOL_NAME,
-					MergeCluster.class,
-					MergeCluster.TOOL_DESCRIPTION);			
-			
+
 			pgd.driver(args);
 
 			exitCode = 0;
