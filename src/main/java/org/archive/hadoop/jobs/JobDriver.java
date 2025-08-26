@@ -37,10 +37,6 @@ public class JobDriver {
 					MergeClusters.class,
 					MergeClusters.TOOL_DESCRIPTION);
 
-			pgd.addClass(HTTPImportJob.TOOL_NAME,
-					HTTPImportJob.class,
-					HTTPImportJob.TOOL_DESCRIPTION);
-
 			pgd.addClass(HDFSeeko.TOOL_NAME,
 					HDFSeeko.class,
 					HDFSeeko.TOOL_DESCRIPTION);
