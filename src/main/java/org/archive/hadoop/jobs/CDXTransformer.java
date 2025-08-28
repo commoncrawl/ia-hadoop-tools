@@ -10,8 +10,7 @@ import java.net.URISyntaxException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.URIException;
-import org.archive.url.DefaultIAURLCanonicalizer;
+import org.archive.url.AggressiveIAURLCanonicalizer;
 import org.archive.url.HandyURL;
 import org.archive.url.NonMassagingIAURLCanonicalizer;
 import org.archive.url.URLCanonicalizer;
@@ -24,7 +23,7 @@ public class CDXTransformer {
 	
 	private PrintWriter out;
 	private char delim = ' ';
-	private URLCanonicalizer can = new DefaultIAURLCanonicalizer();
+	private URLCanonicalizer can = new AggressiveIAURLCanonicalizer();
 	public CDXTransformer(PrintWriter out) {
 		this.out = out;
 	}
